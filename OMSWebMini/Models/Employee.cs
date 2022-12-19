@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 #nullable disable
 
-namespace OMSWebMini.Model
+namespace OMSWebMini.Models
 {
     public partial class Employee
     {
         public Employee()
         {
-            //InverseReportsToNavigation = new HashSet<Employee>();
-            //Orders = new HashSet<Order>();
+            InverseReportsToNavigation = new HashSet<Employee>();
+            Orders = new HashSet<Order>();
         }
 
         public int EmployeeId { get; set; }
@@ -26,13 +26,14 @@ namespace OMSWebMini.Model
         public string PostalCode { get; set; }
         public string Country { get; set; }
         public string HomePhone { get; set; }
-		//public string Extension { get; set; }
-		public string Notes { get; set; }
+        public string Extension { get; set; }
+        public byte[] Photo { get; set; }
+        public string Notes { get; set; }
         public int? ReportsTo { get; set; }
         public string PhotoPath { get; set; }
 
-        //public virtual Employee ReportsToNavigation { get; set; }
-        //public virtual ICollection<Employee> InverseReportsToNavigation { get; set; }
-        //public virtual ICollection<Order> Orders { get; set; }
+        public virtual Employee ReportsToNavigation { get; set; }
+        public virtual ICollection<Employee> InverseReportsToNavigation { get; set; }
+        public virtual ICollection<Order> Orders { get; set; }
     }
 }

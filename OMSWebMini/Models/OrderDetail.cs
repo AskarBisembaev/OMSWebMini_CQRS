@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace OMSWebMini.Model
+#nullable disable
+
+namespace OMSWebMini.Models
 {
-    public partial class OrderDetails
+    public partial class OrderDetail
     {
         public int OrderId { get; set; }
         public int ProductId { get; set; }

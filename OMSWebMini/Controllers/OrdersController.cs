@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using OMSWebMini.Model;
+using OMSWebMini.Models;
 
 namespace OMSWebMini.Controllers
 {
@@ -27,9 +27,9 @@ namespace OMSWebMini.Controllers
 			return await _context.Orders.Select(o => new Order
 			{
 				OrderId = o.OrderId,
-				OrderDate = o.OrderDate,
-				CustomerId = o.CustomerId,
-				EmployeeId = o.EmployeeId
+				//OrderDate = o.OrderDate,
+				//CustomerId = o.CustomerId,
+				//EmployeeId = o.EmployeeId
 			}).ToListAsync();
 		}
 
@@ -38,24 +38,62 @@ namespace OMSWebMini.Controllers
 		public async Task<ActionResult<Order>> GetOrder(int id)
 		{
 			var order = await _context.Orders
+
 			   .Where(o => o.OrderId == id)
+
 			   .FirstOrDefaultAsync();
 
 			if (order == null) return NotFound();
+
 			return order;
 		}
+
 
 		[HttpPost]
 		[Route("api/[controller]/PostOrder")]
 		public async Task<ActionResult<Order>> PostOrder(Order order)
 		{
-			_context.Orders.Add(order);
-			await _context.SaveChangesAsync();
-			var result = CreatedAtAction(nameof(GetOrder),
+			var transaction = await _context.Database.BeginTransactionAsync();
+
+			try
+			{
+				_context.Orders.Add(order);
+				await _context.SaveChangesAsync();
+
+				await UpdateOrdersByCountriesCount(order);
+				await _context.SaveChangesAsync();
+				transaction.CommitAsync();
+			}
+			catch (Exception)
+			{
+				transaction.Rollback();
+			}
+			return CreatedAtAction(nameof(GetOrder),
 				new
-				{ Id = order.OrderId },
-				order);
-			return result;
+				{
+					id = order.OrderId
+				}
+				, order);
+		}
+
+
+		private async Task UpdateOrdersByCountriesCount(Order order)
+		{
+			var OrdersByCountry = await _context.OrdersByCountries
+				.Where(o => o.CountryName == order.Customer.Country)
+				.FirstOrDefaultAsync();
+			if (OrdersByCountry != null)
+			{
+				OrdersByCountry.OrdersCount++;
+			}
+			else
+			{
+				OrdersByCountry obc = new OrdersByCountry
+				{
+					CountryName = order.Customer.Country,
+					OrdersCount = 1
+				};
+			}
 		}
 
 		[HttpPut]
@@ -70,6 +108,8 @@ namespace OMSWebMini.Controllers
 			await _context.SaveChangesAsync();
 			return NoContent();
 		}
+
+
 
 
 		[HttpDelete]
@@ -87,11 +127,11 @@ namespace OMSWebMini.Controllers
 			{
 				try
 				{
-					var details = _context.OrderDetails.Where(o =>order.OrderId == id);
+					var details = _context.OrderDetails.Where(o => order.OrderId == id);
 					_context.OrderDetails.RemoveRange(details);
-				_context.Orders.Remove(order);
-     		await _context.SaveChangesAsync();
-			await transaction.CommitAsync();
+					_context.Orders.Remove(order);
+					await _context.SaveChangesAsync();
+					await transaction.CommitAsync();
 				}
 				catch (Exception)
 				{
@@ -107,7 +147,7 @@ namespace OMSWebMini.Controllers
 		public async Task<IActionResult> DeleteOrdersRange(int[] range)
 		{
 			List<Order> orders = new List<Order>();
-			List<OrderDetails> details = new List<OrderDetails>();
+			List<OrderDetail> details = new List<OrderDetail>();
 
 			foreach (int id in range)
 			{
@@ -119,7 +159,7 @@ namespace OMSWebMini.Controllers
 
 			foreach (var item in orders)
 			{
-				var detail = _context.OrderDetails.Where(o => o.OrderId == item.OrderId) as OrderDetails;
+				var detail = _context.OrderDetails.Where(o => o.OrderId == item.OrderId) as OrderDetail;
 				if (detail != null) details.Add(detail);
 			}
 
@@ -133,11 +173,15 @@ namespace OMSWebMini.Controllers
 				}
 				catch (Exception)
 				{
-				await transaction.RollbackAsync();
+					await transaction.RollbackAsync();
 				}
 				await _context.SaveChangesAsync();
 			}
 			return NoContent();
+		}
+		private bool OrderExists(int id)
+		{
+			return _context.Orders.Any(e => e.OrderId == id);
 		}
 	}
 }
