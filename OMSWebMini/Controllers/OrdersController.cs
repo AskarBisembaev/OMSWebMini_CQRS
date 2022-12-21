@@ -76,7 +76,6 @@ namespace OMSWebMini.Controllers
 				, order);
 		}
 
-
 		private async Task UpdateOrdersByCountriesCount(Order order)
 		{
 			var OrdersByCountry = await _context.OrdersByCountries
@@ -93,6 +92,7 @@ namespace OMSWebMini.Controllers
 					CountryName = order.Customer.Country,
 					OrdersCount = 1
 				};
+				_context.OrdersByCountries.Add(obc);
 			}
 		}
 

@@ -32,6 +32,8 @@ namespace OMSWebMini
 
 			services.AddDbContext<NorthwindContext>(options => options.UseSqlServer(connection));
 
+
+
 			services.AddControllers();
 			services.AddSwaggerGen(c =>
 			{
