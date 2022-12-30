@@ -13,6 +13,7 @@ namespace OMSWebMini.Models
             Orders = new HashSet<Order>();
         }
 
+        //[JsonIgnore]
         public string CustomerId { get; set; }
         public string CompanyName { get; set; }
         //public string ContactName { get; set; }

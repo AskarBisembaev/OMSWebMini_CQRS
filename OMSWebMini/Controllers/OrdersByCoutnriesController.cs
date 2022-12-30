@@ -24,5 +24,6 @@ namespace OMSWebMini.Controllers
 		{
 			return await _context.OrdersByCountries.ToListAsync();
 		}
+
 	}
 }

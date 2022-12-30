@@ -18,7 +18,8 @@ namespace OMSWebMini.Data
         {
         }
 
-        public DbSet<OrdersByCountry> OrdersByCountries { get; set; }
+        public virtual DbSet<OrdersByCountry> OrdersByCountries { get; set; }
+        public DbSet<SalesByCategories> SalesByCategories { get; set; }
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
@@ -30,7 +31,7 @@ namespace OMSWebMini.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=Northwind;Trusted_Connection=True;");
             }
         }
@@ -39,18 +40,26 @@ namespace OMSWebMini.Data
         {
             modelBuilder.HasAnnotation("Relational:Collation", "Cyrillic_General_CI_AS");
 
+            modelBuilder.Entity<SalesByCategories>(entity =>
+            {
+                entity.HasKey(e => e.CategoryName);
 
-			modelBuilder.Entity<OrdersByCountry>(entity =>
-			{
-				entity.HasKey(e => e.CountryName);
+                entity.Property(e => e.CategoryName)
+                    .HasMaxLength(100)
+                    .IsFixedLength(true);
+            });
 
-				entity.Property(e => e.CountryName)
-					.HasMaxLength(100)
-					.IsFixedLength(true);
-			});
+            modelBuilder.Entity<OrdersByCountry>(entity =>
+            {
+                entity.HasKey(e => e.CountryName);
+
+                entity.Property(e => e.CountryName)
+                    .HasMaxLength(100)
+                    .IsFixedLength(true);
+            });
 
 
-			modelBuilder.Entity<Category>(entity =>
+            modelBuilder.Entity<Category>(entity =>
             {
                 entity.HasIndex(e => e.CategoryName, "CategoryName");
 
@@ -60,9 +69,9 @@ namespace OMSWebMini.Data
                     .IsRequired()
                     .HasMaxLength(15);
 
-                entity.Property(e => e.Description).HasColumnType("ntext");
+                //entity.Property(e => e.Description).HasColumnType("ntext");
 
-                entity.Property(e => e.Picture).HasColumnType("image");
+                //entity.Property(e => e.Picture).HasColumnType("image");
             });
 
             modelBuilder.Entity<Customer>(entity =>
@@ -155,9 +164,9 @@ namespace OMSWebMini.Data
 
             modelBuilder.Entity<Order>(entity =>
             {
-                //entity.HasIndex(e => e.CustomerId, "CustomerID");
+                entity.HasIndex(e => e.CustomerId, "CustomerID");
 
-                //entity.HasIndex(e => e.CustomerId, "CustomersOrders");
+                entity.HasIndex(e => e.CustomerId, "CustomersOrders");
 
                 //entity.HasIndex(e => e.EmployeeId, "EmployeeID");
 
@@ -173,10 +182,10 @@ namespace OMSWebMini.Data
 
                 entity.Property(e => e.OrderId).HasColumnName("OrderID");
 
-                //entity.Property(e => e.CustomerId)
-                //    .HasMaxLength(5)
-                //    .HasColumnName("CustomerID")
-                //    .IsFixedLength(true);
+                entity.Property(e => e.CustomerId)
+                    .HasMaxLength(5)
+                    .HasColumnName("CustomerID")
+                    .IsFixedLength(true);
 
                 //entity.Property(e => e.EmployeeId).HasColumnName("EmployeeID");
 
@@ -192,7 +201,7 @@ namespace OMSWebMini.Data
 
                 //entity.Property(e => e.ShipCity).HasMaxLength(15);
 
-                //entity.Property(e => e.ShipCountry).HasMaxLength(15);
+                entity.Property(e => e.ShipCountry).HasMaxLength(15);
 
                 //entity.Property(e => e.ShipName).HasMaxLength(40);
 
@@ -202,10 +211,10 @@ namespace OMSWebMini.Data
 
                 //entity.Property(e => e.ShippedDate).HasColumnType("datetime");
 
-                //entity.HasOne(d => d.Customer)
-                //    .WithMany(p => p.Orders)
-                //    .HasForeignKey(d => d.CustomerId)
-                //    .HasConstraintName("FK_Orders_Customers");
+                entity.HasOne(d => d.Customer)
+                    .WithMany(p => p.Orders)
+                    .HasForeignKey(d => d.CustomerId)
+                    .HasConstraintName("FK_Orders_Customers");
 
                 //entity.HasOne(d => d.Employee)
                 //    .WithMany(p => p.Orders)
@@ -237,11 +246,11 @@ namespace OMSWebMini.Data
 
                 entity.Property(e => e.UnitPrice).HasColumnType("money");
 
-                //entity.HasOne(d => d.Order)
-                //    .WithMany(p => p.OrderDetails)
-                //    .HasForeignKey(d => d.OrderId)
-                //    .OnDelete(DeleteBehavior.ClientSetNull)
-                //    .HasConstraintName("FK_Order_Details_Orders");
+                entity.HasOne(d => d.Order)
+                    .WithMany(p => p.OrderDetails)
+                    .HasForeignKey(d => d.OrderId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Order_Details_Orders");
 
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.OrderDetails)
@@ -250,7 +259,7 @@ namespace OMSWebMini.Data
                     .HasConstraintName("FK_Order_Details_Products");
             });
 
-          
+
 
             modelBuilder.Entity<Product>(entity =>
             {
@@ -258,7 +267,7 @@ namespace OMSWebMini.Data
 
                 entity.HasIndex(e => e.CategoryId, "CategoryID");
 
-                entity.HasIndex(e => e.ProductName, "ProductName");
+                //entity.HasIndex(e => e.ProductName, "ProductName");
 
                 //entity.HasIndex(e => e.SupplierId, "SupplierID");
 
@@ -268,33 +277,33 @@ namespace OMSWebMini.Data
 
                 entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
 
-                entity.Property(e => e.ProductName)
-                    .IsRequired()
-                    .HasMaxLength(40);
+                //entity.Property(e => e.ProductName)
+                //    .IsRequired()
+                //    .HasMaxLength(40);
 
-                entity.Property(e => e.QuantityPerUnit).HasMaxLength(20);
+                //entity.Property(e => e.QuantityPerUnit).HasMaxLength(20);
 
-                entity.Property(e => e.ReorderLevel).HasDefaultValueSql("((0))");
+                //entity.Property(e => e.ReorderLevel).HasDefaultValueSql("((0))");
 
                 //entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
 
-                entity.Property(e => e.UnitPrice)
-                    .HasColumnType("money")
-                    .HasDefaultValueSql("((0))");
+                //entity.Property(e => e.UnitPrice)
+                //    .HasColumnType("money")
+                //    .HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.UnitsInStock).HasDefaultValueSql("((0))");
+                //entity.Property(e => e.UnitsInStock).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.UnitsOnOrder).HasDefaultValueSql("((0))");
+                //entity.Property(e => e.UnitsOnOrder).HasDefaultValueSql("((0))");
 
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.Products)
                     .HasForeignKey(d => d.CategoryId)
                     .HasConstraintName("FK_Products_Categories");
 
-               
+
             });
 
-          
+
             OnModelCreatingPartial(modelBuilder);
         }
 

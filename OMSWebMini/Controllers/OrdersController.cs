@@ -27,6 +27,7 @@ namespace OMSWebMini.Controllers
 			return await _context.Orders.Select(o => new Order
 			{
 				OrderId = o.OrderId,
+				//ShipCountry = o.Customer.Country
 				//OrderDate = o.OrderDate,
 				//CustomerId = o.CustomerId,
 				//EmployeeId = o.EmployeeId
@@ -48,32 +49,59 @@ namespace OMSWebMini.Controllers
 			return order;
 		}
 
-
 		[HttpPost]
 		[Route("api/[controller]/PostOrder")]
 		public async Task<ActionResult<Order>> PostOrder(Order order)
 		{
 			var transaction = await _context.Database.BeginTransactionAsync();
-
 			try
 			{
 				_context.Orders.Add(order);
+				UpdateOrdersByCountriesCount(order);
 				await _context.SaveChangesAsync();
 
-				await UpdateOrdersByCountriesCount(order);
-				await _context.SaveChangesAsync();
 				transaction.CommitAsync();
 			}
 			catch (Exception)
 			{
 				transaction.Rollback();
 			}
+
+			await _context.SaveChangesAsync();
 			return CreatedAtAction(nameof(GetOrder),
-				new
+			new
+			{
+				id = order.OrderId,
+			}
+			, order);
+		}
+
+
+		private async Task UpdateSalesByCategories(Order order)
+		{
+			var sbc = order.OrderDetails
+					.GroupBy(x => x.Product.Category.CategoryName)
+					.Select(x => new { CategoryName = x.Key, Sales = x.Sum(x => x.UnitPrice * x.Quantity) });
+
+			foreach (var newsbc in sbc)
+			{
+				var salesByCategory = await _context.SalesByCategories
+					.Where(c => c.CategoryName == newsbc.CategoryName)
+					.FirstOrDefaultAsync();
+
+				if (salesByCategory != null)
 				{
-					id = order.OrderId
+					salesByCategory.Sales += newsbc.Sales;
 				}
-				, order);
+				else
+				{
+					SalesByCategories sbc2 = new SalesByCategories
+					{
+						CategoryName = newsbc.CategoryName,
+						Sales = newsbc.Sales
+					};
+				}
+				}
 		}
 
 		private async Task UpdateOrdersByCountriesCount(Order order)

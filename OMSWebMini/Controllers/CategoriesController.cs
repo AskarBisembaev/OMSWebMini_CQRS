@@ -29,7 +29,7 @@ namespace OMSWebMini.Controllers
 				{
 					CategoryId = c.CategoryId,
 					CategoryName = c.CategoryName,
-					Picture = c.Picture
+					//Picture = c.Picture
 				}).ToListAsync();
 			}
 			else
@@ -68,16 +68,16 @@ namespace OMSWebMini.Controllers
 			Category category1 = new Category()
 			{
 				CategoryName = category.CategoryName,
-				Description = category.Description
+				//Description = category.Description
 			};
 			_context.Categories.Add(category);
 			await _context.SaveChangesAsync();
 			return CreatedAtAction(nameof(GetCategory),
 				new
 				{
-					Id = category.CategoryId
+					Id = category1.CategoryId
 				},
-				category1);
+				category);
 		}
 
 		[HttpPut]
