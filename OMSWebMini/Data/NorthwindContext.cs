@@ -20,6 +20,8 @@ namespace OMSWebMini.Data
 
         public virtual DbSet<OrdersByCountry> OrdersByCountries { get; set; }
         public DbSet<SalesByCategories> SalesByCategories { get; set; }
+
+        public virtual DbSet<SalesByCountries> SalesByCountries{get; set;}
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
@@ -40,7 +42,16 @@ namespace OMSWebMini.Data
         {
             modelBuilder.HasAnnotation("Relational:Collation", "Cyrillic_General_CI_AS");
 
-            modelBuilder.Entity<SalesByCategories>(entity =>
+			modelBuilder.Entity<SalesByCountries>(entity =>
+			{
+				entity.HasKey(e => e.CountryName);
+
+			entity.Property(e => e.CountryName)
+				.HasMaxLength(100)
+				.IsFixedLength(true);
+			});
+
+			modelBuilder.Entity<SalesByCategories>(entity =>
             {
                 entity.HasKey(e => e.CategoryName);
 

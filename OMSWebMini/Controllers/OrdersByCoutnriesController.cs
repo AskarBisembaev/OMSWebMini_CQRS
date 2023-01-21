@@ -19,10 +19,17 @@ namespace OMSWebMini.Controllers
 		}
 		
 		[HttpGet]
-		[Route("api/[controller]/Get")]
-		public async Task<ActionResult<IEnumerable<OrdersByCountry>>> Get()
+		[Route("api/[controller]/GetOrdersByCountry")]
+		public async Task<ActionResult<IEnumerable<OrdersByCountry>>> GetOrdersByCountry()
 		{
 			return await _context.OrdersByCountries.ToListAsync();
+		}
+		
+		[HttpGet]
+		[Route("api/[controller]/GetSalesByCategories")]
+		public async Task<ActionResult<IEnumerable<SalesByCategories>>> GetSalesByCategories()
+		{
+			return await _context.SalesByCategories.ToListAsync();
 		}
 
 	}

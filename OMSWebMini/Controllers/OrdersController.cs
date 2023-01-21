@@ -58,6 +58,8 @@ namespace OMSWebMini.Controllers
 			{
 				_context.Orders.Add(order);
 				UpdateOrdersByCountriesCount(order);
+				UpdateSalesByCategory(order);
+				UpdateSalesByCountries(order);
 				await _context.SaveChangesAsync();
 
 				transaction.CommitAsync();
@@ -76,32 +78,66 @@ namespace OMSWebMini.Controllers
 			, order);
 		}
 
-
-		private async Task UpdateSalesByCategories(Order order)
+		private async Task UpdateSalesByCountries(Order order)
 		{
-			var sbc = order.OrderDetails
-					.GroupBy(x => x.Product.Category.CategoryName)
-					.Select(x => new { CategoryName = x.Key, Sales = x.Sum(x => x.UnitPrice * x.Quantity) });
-
-			foreach (var newsbc in sbc)
+			var query = order.OrderDetails
+				 .GroupBy(c => c.Order.Customer.Country)
+				 .Select(c => new SalesByCountries
+				 {
+					 CountryName = c.Key,
+					 Sales = c.Sum(c => c.UnitPrice * c.Quantity)
+				 });
+			foreach (var sbc in query)
 			{
-				var salesByCategory = await _context.SalesByCategories
-					.Where(c => c.CategoryName == newsbc.CategoryName)
+				var SalesByCountry = await _context.SalesByCountries
+					.Where(c => c.CountryName == sbc.CountryName)
 					.FirstOrDefaultAsync();
-
-				if (salesByCategory != null)
+				if (SalesByCountry != null)
 				{
-					salesByCategory.Sales += newsbc.Sales;
+					SalesByCountry.Sales = sbc.Sales;
 				}
 				else
 				{
-					SalesByCategories sbc2 = new SalesByCategories
+					SalesByCountries newsbc = new SalesByCountries
 					{
-						CategoryName = newsbc.CategoryName,
-						Sales = newsbc.Sales
+						CountryName = sbc.CountryName,
+						Sales = sbc.Sales
 					};
+					_context.SalesByCountries.Add(newsbc);
 				}
+			}
+		}
+
+		private async Task UpdateSalesByCategory(Order order)
+		{
+			var query = order.OrderDetails
+				.GroupBy(c => c.Product.Category.CategoryName)
+				.Select(c => new SalesByCategories
+				{
+					CategoryName = c.Key,
+					Sales = c.Sum(c => c.UnitPrice * c.Quantity)
+				});
+
+			foreach (var sbc in query)
+			{
+				var SalesByCategory = await _context.SalesByCategories
+					.Where(c => c.CategoryName == sbc.CategoryName)
+					.FirstOrDefaultAsync();
+
+				if (SalesByCategory != null)
+				{
+					SalesByCategory.Sales += sbc.Sales;
 				}
+				else
+				{
+					SalesByCategories newsbc = new SalesByCategories
+					{
+						CategoryName = sbc.CategoryName,
+						Sales = sbc.Sales
+					};
+					_context.SalesByCategories.Add(newsbc);
+				}
+			}
 		}
 
 		private async Task UpdateOrdersByCountriesCount(Order order)
