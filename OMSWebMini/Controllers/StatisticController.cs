@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 namespace OMSWebMini.Controllers
 {
 	[ApiController]
-	public class OrdersByCoutnriesController : ControllerBase
+	public class StatisticController : ControllerBase
 	{
 		private readonly NorthwindContext _context;
-		public OrdersByCoutnriesController(NorthwindContext context)
+		public StatisticController(NorthwindContext context)
 		{
 			_context = context;
 		}
@@ -30,6 +30,13 @@ namespace OMSWebMini.Controllers
 		public async Task<ActionResult<IEnumerable<SalesByCategories>>> GetSalesByCategories()
 		{
 			return await _context.SalesByCategories.ToListAsync();
+		}
+
+		[HttpGet]
+		[Route("api/[controller]/GetProductsByCategories")]
+		public async Task<ActionResult<IEnumerable<ProductsByCategories>>> GetProductsByCategories()
+		{
+			return await _context.ProductsByCategories.ToListAsync();
 		}
 
 	}

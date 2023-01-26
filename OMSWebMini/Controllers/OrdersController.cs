@@ -54,12 +54,13 @@ namespace OMSWebMini.Controllers
 		public async Task<ActionResult<Order>> PostOrder(Order order)
 		{
 			var transaction = await _context.Database.BeginTransactionAsync();
+			_context.Orders.Add(order);
 			try
 			{
-				_context.Orders.Add(order);
 				UpdateOrdersByCountriesCount(order);
 				UpdateSalesByCategory(order);
 				UpdateSalesByCountries(order);
+				UpdateCustomersByCountries(order);
 				await _context.SaveChangesAsync();
 
 				transaction.CommitAsync();
@@ -76,6 +77,56 @@ namespace OMSWebMini.Controllers
 				id = order.OrderId,
 			}
 			, order);
+		}
+
+		private async Task UpdateSalesByEmployees(Order order)
+		{
+			var query = order.OrderDetails
+				.GroupBy(e => e.Order.Employee.LastName)
+				.Select(e => new SalesByEmployees
+				{
+					EmployeeName = e.Key,
+					Sales = e.Sum(e => e.UnitPrice * e.Quantity)
+				});
+			foreach (var sbe in query)
+			{
+				var sales = await _context.SalesByEmployees
+					.Where(e => e.EmployeeName == sbe.EmployeeName)
+					.FirstOrDefaultAsync();
+				if (sales != null)
+				{
+					sales.Sales = sbe.Sales;
+				}
+				else
+				{
+					SalesByEmployees newsbe = new SalesByEmployees
+					{
+						EmployeeName = sbe.EmployeeName,
+						Sales = sbe.Sales,
+					};
+					_context.SalesByEmployees.Add(sbe);
+				}
+			}
+		}
+
+		private async Task UpdateCustomersByCountries(Order order)
+		{
+			var customer = await _context.CustomersByCountries
+				.Where(c => c.CountryName == order.Customer.Country)
+				.FirstOrDefaultAsync();
+			if (customer != null)
+			{
+				customer.CustomersCount++;
+			}
+			else
+			{
+				CustomersByCountries cbc = new CustomersByCountries
+				{
+					CountryName = order.Customer.Country,
+					CustomersCount = 1,
+				};
+				_context.CustomersByCountries.Add(cbc);
+			}
 		}
 
 		private async Task UpdateSalesByCountries(Order order)

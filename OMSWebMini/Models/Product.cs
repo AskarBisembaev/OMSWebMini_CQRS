@@ -14,7 +14,7 @@ namespace OMSWebMini.Models
         }
 
         public int ProductId { get; set; }
-        //public string ProductName { get; set; }
+        public string ProductName { get; set; }
         ////public int? SupplierId { get; set; }
         public int? CategoryId { get; set; }
         //public string QuantityPerUnit { get; set; }
@@ -24,7 +24,7 @@ namespace OMSWebMini.Models
         //public short? ReorderLevel { get; set; }
         //public bool Discontinued { get; set; }
 
-        [JsonIgnore]
+        //[JsonIgnore]
         public virtual Category Category { get; set; }
 
         [JsonIgnore]

@@ -20,8 +20,11 @@ namespace OMSWebMini.Data
 
         public virtual DbSet<OrdersByCountry> OrdersByCountries { get; set; }
         public DbSet<SalesByCategories> SalesByCategories { get; set; }
-
-        public virtual DbSet<SalesByCountries> SalesByCountries{get; set;}
+		public virtual DbSet<CustomersByCountries> CustomersByCountries { get; set; }
+		public virtual DbSet<ProductsByCategories> ProductsByCategories { get; set; }
+		public virtual DbSet<PurchasesByCustomers> PurchasesByCustomers { get; set; }
+		public virtual DbSet<SalesByEmployees> SalesByEmployees { get; set; }
+		public virtual DbSet<SalesByCountries> SalesByCountries{get; set;}
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
@@ -41,6 +44,42 @@ namespace OMSWebMini.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "Cyrillic_General_CI_AS");
+
+			modelBuilder.Entity<SalesByEmployees>(entity =>
+			{
+				entity.HasKey(e => e.EmployeeName);
+
+				entity.Property(e => e.EmployeeName)
+					.HasMaxLength(100)
+					.IsFixedLength(true);
+			});
+
+			modelBuilder.Entity<PurchasesByCustomers>(entity =>
+			{
+				entity.HasKey(e => e.CompanyName);
+
+				entity.Property(e => e.CompanyName)
+					.HasMaxLength(100)
+					.IsFixedLength(true);
+			});
+
+			modelBuilder.Entity<ProductsByCategories>(entity =>
+			{
+				entity.HasKey(e => e.CategoryName);
+
+				entity.Property(e => e.CategoryName)
+					.HasMaxLength(100)
+					.IsFixedLength(true);
+			});
+
+			modelBuilder.Entity<CustomersByCountries>(entity =>
+			{
+				entity.HasKey(e => e.CountryName);
+
+				entity.Property(e => e.CountryName)
+					.HasMaxLength(100)
+					.IsFixedLength(true);
+			});
 
 			modelBuilder.Entity<SalesByCountries>(entity =>
 			{
@@ -179,9 +218,9 @@ namespace OMSWebMini.Data
 
                 entity.HasIndex(e => e.CustomerId, "CustomersOrders");
 
-                //entity.HasIndex(e => e.EmployeeId, "EmployeeID");
+                entity.HasIndex(e => e.EmployeeId, "EmployeeID");
 
-                //entity.HasIndex(e => e.EmployeeId, "EmployeesOrders");
+                entity.HasIndex(e => e.EmployeeId, "EmployeesOrders");
 
                 //entity.HasIndex(e => e.OrderDate, "OrderDate");
 
@@ -198,7 +237,7 @@ namespace OMSWebMini.Data
                     .HasColumnName("CustomerID")
                     .IsFixedLength(true);
 
-                //entity.Property(e => e.EmployeeId).HasColumnName("EmployeeID");
+                entity.Property(e => e.EmployeeId).HasColumnName("EmployeeID");
 
                 //entity.Property(e => e.Freight)
                 //    .HasColumnType("money")
@@ -227,10 +266,10 @@ namespace OMSWebMini.Data
                     .HasForeignKey(d => d.CustomerId)
                     .HasConstraintName("FK_Orders_Customers");
 
-                //entity.HasOne(d => d.Employee)
-                //    .WithMany(p => p.Orders)
-                //    .HasForeignKey(d => d.EmployeeId)
-                //    .HasConstraintName("FK_Orders_Employees");
+                entity.HasOne(d => d.Employee)
+                    .WithMany(p => p.Orders)
+                    .HasForeignKey(d => d.EmployeeId)
+                    .HasConstraintName("FK_Orders_Employees");
 
             });
 
@@ -278,7 +317,7 @@ namespace OMSWebMini.Data
 
                 entity.HasIndex(e => e.CategoryId, "CategoryID");
 
-                //entity.HasIndex(e => e.ProductName, "ProductName");
+                entity.HasIndex(e => e.ProductName, "ProductName");
 
                 //entity.HasIndex(e => e.SupplierId, "SupplierID");
 

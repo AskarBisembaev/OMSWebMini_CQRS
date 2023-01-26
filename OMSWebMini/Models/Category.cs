@@ -19,7 +19,7 @@ namespace OMSWebMini.Models
         //public byte[] Picture { get; set; }
 
 
-        //[JsonIgnore]
+        [JsonIgnore]
         public virtual ICollection<Product> Products { get; set; }
     }
 }
