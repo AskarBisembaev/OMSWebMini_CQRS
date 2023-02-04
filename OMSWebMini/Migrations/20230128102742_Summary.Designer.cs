@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OMSWebMini.Data;
 
 namespace OMSWebMini.Migrations
 {
     [DbContext(typeof(NorthwindContext))]
-    partial class NorthwindContextModelSnapshot : ModelSnapshot
+    [Migration("20230128102742_Summary")]
+    partial class Summary
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -181,9 +183,6 @@ namespace OMSWebMini.Migrations
                         .HasColumnType("int")
                         .HasColumnName("EmployeeID");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<string>("ShipCountry")
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
@@ -347,32 +346,6 @@ namespace OMSWebMini.Migrations
                     b.HasKey("EmployeeName");
 
                     b.ToTable("SalesByEmployees");
-                });
-
-            modelBuilder.Entity("OMSWebMini.Models.Summary", b =>
-                {
-                    b.Property<int>("id")
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Average")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxCheck")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MinChek")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OverallOrdersQuantiy")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OverallSalesSum")
-                        .HasColumnType("int");
-
-                    b.HasKey("id");
-
-                    b.ToTable("Summary");
                 });
 
             modelBuilder.Entity("OMSWebMini.Models.Employee", b =>

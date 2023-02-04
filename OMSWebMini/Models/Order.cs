@@ -27,6 +27,7 @@ namespace OMSWebMini.Models
 		//public string ShipRegion { get; set; }
 		//public string ShipPostalCode { get; set; }
 		public string ShipCountry { get; set; }
+		public bool IsDeleted { get; set; }
 
 
 		[JsonIgnore]

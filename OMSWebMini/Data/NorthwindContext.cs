@@ -17,8 +17,8 @@ namespace OMSWebMini.Data
             : base(options)
         {
         }
-
-        public virtual DbSet<OrdersByCountry> OrdersByCountries { get; set; }
+		public virtual DbSet<Summary> Summary { get; set; }
+		public virtual DbSet<OrdersByCountry> OrdersByCountries { get; set; }
         public DbSet<SalesByCategories> SalesByCategories { get; set; }
 		public virtual DbSet<CustomersByCountries> CustomersByCountries { get; set; }
 		public virtual DbSet<ProductsByCategories> ProductsByCategories { get; set; }
@@ -44,6 +44,21 @@ namespace OMSWebMini.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "Cyrillic_General_CI_AS");
+
+			modelBuilder.Entity<Summary>(entity =>
+			{
+				entity.Property(e => e.id)
+					.ValueGeneratedNever()
+					.HasColumnName("id");
+
+				entity.Property(e => e.Average).HasColumnType("int");
+
+				entity.Property(e => e.MaxCheck).HasColumnType("int");
+
+				entity.Property(e => e.MinChek).HasColumnType("int");
+
+				entity.Property(e => e.OverallSalesSum).HasColumnType("int");
+			});
 
 			modelBuilder.Entity<SalesByEmployees>(entity =>
 			{

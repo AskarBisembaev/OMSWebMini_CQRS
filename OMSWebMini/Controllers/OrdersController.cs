@@ -10,7 +10,6 @@ using OMSWebMini.Models;
 
 namespace OMSWebMini.Controllers
 {
-	//api
 	[ApiController]
 	public class OrdersController : ControllerBase
 	{
@@ -20,6 +19,7 @@ namespace OMSWebMini.Controllers
 			_context = context;
 		}
 
+		#region Get
 		[HttpGet]
 		[Route("api/[controller]/GetOrdersAsync")]
 		public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
@@ -48,7 +48,9 @@ namespace OMSWebMini.Controllers
 
 			return order;
 		}
+		#endregion
 
+		#region Post
 		[HttpPost]
 		[Route("api/[controller]/PostOrder")]
 		public async Task<ActionResult<Order>> PostOrder(Order order)
@@ -57,10 +59,7 @@ namespace OMSWebMini.Controllers
 			_context.Orders.Add(order);
 			try
 			{
-				UpdateOrdersByCountriesCount(order);
-				UpdateSalesByCategory(order);
-				UpdateSalesByCountries(order);
-				UpdateCustomersByCountries(order);
+				Update(order);
 				await _context.SaveChangesAsync();
 
 				transaction.CommitAsync();
@@ -77,6 +76,36 @@ namespace OMSWebMini.Controllers
 				id = order.OrderId,
 			}
 			, order);
+		}
+		#endregion
+
+		#region procedures for working with non-normalized tables
+		private async Task Update(Order order)
+		{
+			UpdateOrdersByCountriesCount(order);
+			UpdateSalesByCategory(order);
+			UpdateSalesByCountries(order);
+			UpdateCustomersByCountries(order);
+			UpdateSalesByEmployees(order);
+		}
+		private async Task UpdateCustomersByCountry(Order order)
+		{
+			var cbc = await _context.CustomersByCountries
+				.Where(c => c.CountryName == order.Customer.Country)
+				.FirstOrDefaultAsync();
+			if (cbc != null)
+			{
+				cbc.CustomersCount++;
+			}
+			else
+			{
+				CustomersByCountries newcbc = new CustomersByCountries
+				{
+					CountryName = order.Customer.Country,
+					CustomersCount = 1,
+				};
+				_context.CustomersByCountries.Add(newcbc);
+			}
 		}
 
 		private async Task UpdateSalesByEmployees(Order order)
@@ -107,6 +136,12 @@ namespace OMSWebMini.Controllers
 					_context.SalesByEmployees.Add(sbe);
 				}
 			}
+		}
+
+		private async Task UpdateSummary()
+		{
+			var oss = await _context.OrderDetails.SumAsync(s => s.Quantity * s.UnitPrice);
+			var ooq = await _context.Orders.CountAsync();
 		}
 
 		private async Task UpdateCustomersByCountries(Order order)
@@ -210,7 +245,18 @@ namespace OMSWebMini.Controllers
 				_context.OrdersByCountries.Add(obc);
 			}
 		}
+		private async Task DeleteOrder(Order order)
+		{
+			var delete = await _context.OrdersByCountries.Where(o => o.CountryName == order.Customer.Country)
+				.FirstOrDefaultAsync();
+			if (delete != null)
+				delete.OrdersCount -= 1;
+			else
+				BadRequest();
+		}
+		#endregion
 
+		#region Put
 		[HttpPut]
 		[Route("api/[controller]/PutOrder")]
 		public async Task<IActionResult> PutOrder(int id, Order item)
@@ -223,10 +269,9 @@ namespace OMSWebMini.Controllers
 			await _context.SaveChangesAsync();
 			return NoContent();
 		}
+		#endregion
 
-
-
-
+		#region Delete
 		[HttpDelete]
 		[Route("api/[controller]/DeleteOrder")]
 		public async Task<IActionResult> DeleteOrder(int id)
@@ -242,9 +287,13 @@ namespace OMSWebMini.Controllers
 			{
 				try
 				{
-					var details = _context.OrderDetails.Where(o => order.OrderId == id);
+					var details = _context.OrderDetails.Where(o => order.OrderId == id && order.IsDeleted == false);
+					if (order.IsDeleted == false)
+						order.IsDeleted = true;
+					else
+						_context.Orders.Remove(order);
 					_context.OrderDetails.RemoveRange(details);
-					_context.Orders.Remove(order);
+					DeleteOrder(order);
 					await _context.SaveChangesAsync();
 					await transaction.CommitAsync();
 				}
@@ -256,6 +305,8 @@ namespace OMSWebMini.Controllers
 
 			return NoContent();
 		}
+
+		
 
 		[HttpDelete]
 		[Route("api/[controller]/DeleteOrders")]
@@ -294,6 +345,7 @@ namespace OMSWebMini.Controllers
 			}
 			return NoContent();
 		}
+		#endregion
 		private bool OrderExists(int id)
 		{
 			return _context.Orders.Any(e => e.OrderId == id);
