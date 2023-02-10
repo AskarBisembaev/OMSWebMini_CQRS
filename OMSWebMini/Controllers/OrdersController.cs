@@ -274,10 +274,10 @@ namespace OMSWebMini.Controllers
 		#region Delete
 		[HttpDelete]
 		[Route("api/[controller]/DeleteOrder")]
-		public async Task<IActionResult> DeleteOrder(int id)
+		public async Task<ActionResult<Order>> DeleteOrder(int id)
 		{
 			var order = await _context.Orders.FindAsync(id);
-
+			var storagelife = await _context.StorageLife.FirstOrDefaultAsync();
 			if (order == null)
 			{
 				return NotFound();
@@ -287,13 +287,24 @@ namespace OMSWebMini.Controllers
 			{
 				try
 				{
-					var details = _context.OrderDetails.Where(o => order.OrderId == id && order.IsDeleted == false);
+					var details = _context.OrderDetails.Where(o => order.OrderId == id && order.IsDeleted == true);
 					if (order.IsDeleted == false)
+					{
 						order.IsDeleted = true;
-					else
-						_context.Orders.Remove(order);
+						order.CompletedDate = DateTime.Now;
+					}
+					else if (order.IsDeleted == true)
+					{
+						if (order.CompletedDate.Year >= storagelife.OrderStoragePeriod)
+						{
+							_context.Orders.Remove(order);
+						}
+						else
+						{
+							return BadRequest();
+						}
+					}
 					_context.OrderDetails.RemoveRange(details);
-					DeleteOrder(order);
 					await _context.SaveChangesAsync();
 					await transaction.CommitAsync();
 				}
@@ -305,8 +316,6 @@ namespace OMSWebMini.Controllers
 
 			return NoContent();
 		}
-
-		
 
 		[HttpDelete]
 		[Route("api/[controller]/DeleteOrders")]

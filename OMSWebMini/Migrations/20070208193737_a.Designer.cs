@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OMSWebMini.Data;
 
 namespace OMSWebMini.Migrations
 {
     [DbContext(typeof(NorthwindContext))]
-    partial class NorthwindContextModelSnapshot : ModelSnapshot
+    [Migration("20070208193737_a")]
+    partial class a
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,11 +204,11 @@ namespace OMSWebMini.Migrations
 
                     b.HasKey("OrderId");
 
+                    b.HasIndex(new[] { "CompletedDate" }, "ComplitedDate");
+
                     b.HasIndex(new[] { "CustomerId" }, "CustomerID");
 
                     b.HasIndex(new[] { "CustomerId" }, "CustomersOrders");
-
-                    b.HasIndex(new[] { "CompletedDate" }, "DeliveryDate");
 
                     b.HasIndex(new[] { "EmployeeId" }, "EmployeeID");
 

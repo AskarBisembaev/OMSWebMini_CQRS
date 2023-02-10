@@ -38,6 +38,5 @@ namespace OMSWebMini.Controllers
 		{
 			return await _context.ProductsByCategories.ToListAsync();
 		}
-
 	}
 }

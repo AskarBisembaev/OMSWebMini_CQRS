@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OMSWebMini.Data;
 
 namespace OMSWebMini.Migrations
 {
     [DbContext(typeof(NorthwindContext))]
-    partial class NorthwindContextModelSnapshot : ModelSnapshot
+    [Migration("20230208181837_Policy")]
+    partial class Policy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -171,14 +173,14 @@ namespace OMSWebMini.Migrations
                         .HasColumnName("OrderID")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("CompletedDate")
-                        .HasColumnType("datetime");
-
                     b.Property<string>("CustomerId")
                         .HasMaxLength(5)
                         .HasColumnType("nchar(5)")
                         .HasColumnName("CustomerID")
                         .IsFixedLength(true);
+
+                    b.Property<DateTime>("DeliveryDate")
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("EmployeeId")
                         .HasColumnType("int")
@@ -206,7 +208,7 @@ namespace OMSWebMini.Migrations
 
                     b.HasIndex(new[] { "CustomerId" }, "CustomersOrders");
 
-                    b.HasIndex(new[] { "CompletedDate" }, "DeliveryDate");
+                    b.HasIndex(new[] { "DeliveryDate" }, "DeliveryDate");
 
                     b.HasIndex(new[] { "EmployeeId" }, "EmployeeID");
 
@@ -370,15 +372,10 @@ namespace OMSWebMini.Migrations
             modelBuilder.Entity("OMSWebMini.Models.StorageLife", b =>
                 {
                     b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("ID")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
 
                     b.Property<int>("OrderStoragePeriod")
                         .HasColumnType("int");
-
-                    b.HasKey("ID");
 
                     b.ToTable("StorageLife");
                 });

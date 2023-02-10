@@ -17,6 +17,7 @@ namespace OMSWebMini.Data
             : base(options)
         {
         }
+        public virtual DbSet<StorageLife> StorageLife { get; set; }
 		public virtual DbSet<Summary> Summary { get; set; }
 		public virtual DbSet<OrdersByCountry> OrdersByCountries { get; set; }
         public DbSet<SalesByCategories> SalesByCategories { get; set; }
@@ -44,6 +45,12 @@ namespace OMSWebMini.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "Cyrillic_General_CI_AS");
+
+            modelBuilder.Entity<StorageLife>(entity =>
+            {
+                entity.Property(e => e.OrderStoragePeriod).HasColumnType("int");
+                entity.Property(e => e.ID).HasColumnType("int").HasColumnName("ID");
+            });
 
 			modelBuilder.Entity<Summary>(entity =>
 			{
@@ -237,14 +244,15 @@ namespace OMSWebMini.Data
 
                 entity.HasIndex(e => e.EmployeeId, "EmployeesOrders");
 
-                //entity.HasIndex(e => e.OrderDate, "OrderDate");
+                entity.HasIndex(e => e.OrderDate, "OrderDate");
 
                 //entity.HasIndex(e => e.ShipPostalCode, "ShipPostalCode");
 
-                //entity.HasIndex(e => e.ShippedDate, "ShippedDate");
+                entity.HasIndex(e => e.ShippedDate, "ShippedDate");
 
                 //entity.HasIndex(e => e.ShipVia, "ShippersOrders");
-
+                entity.HasIndex(e => e.CompletedDate, "ComplitedDate");
+                entity.Property(e => e.CompletedDate).HasColumnType("datetime");
                 entity.Property(e => e.OrderId).HasColumnName("OrderID");
 
                 entity.Property(e => e.CustomerId)
@@ -258,9 +266,9 @@ namespace OMSWebMini.Data
                 //    .HasColumnType("money")
                 //    .HasDefaultValueSql("((0))");
 
-                //entity.Property(e => e.OrderDate).HasColumnType("datetime");
+                entity.Property(e => e.OrderDate).HasColumnType("datetime");
 
-                //entity.Property(e => e.RequiredDate).HasColumnType("datetime");
+                entity.Property(e => e.RequiredDate).HasColumnType("datetime");
 
                 //entity.Property(e => e.ShipAddress).HasMaxLength(60);
 
@@ -274,7 +282,7 @@ namespace OMSWebMini.Data
 
                 //entity.Property(e => e.ShipRegion).HasMaxLength(15);
 
-                //entity.Property(e => e.ShippedDate).HasColumnType("datetime");
+                entity.Property(e => e.ShippedDate).HasColumnType("datetime");
 
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Orders)
