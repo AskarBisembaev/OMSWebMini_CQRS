@@ -295,7 +295,8 @@ namespace OMSWebMini.Controllers
 					}
 					else if (order.IsDeleted == true)
 					{
-						if (order.CompletedDate.Year >= storagelife.OrderStoragePeriod)
+						var instorage= DateTime.Now.Year - order.CompletedDate.Year;
+						if (instorage >= storagelife.OrderStoragePeriod)
 						{
 							_context.Orders.Remove(order);
 						}
